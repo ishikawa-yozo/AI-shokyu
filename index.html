@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中小企業向け AI基礎知識検定</title>
+    <style>
+        :root {
+            --primary-color: #0056b3; /* 初級はブルーベース */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --correct-color: #28a745;
+            --incorrect-color: #dc3545;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            margin: 10px 0;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #003d80;
+        }
+
+        .option-btn {
+            background-color: #f8f9fa;
+            color: #333;
+            border: 2px solid #e9ecef;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #e2e6ea;
+            border-color: #dae0e5;
+        }
+
+        /* 解答後の選択肢スタイル */
+        .option-btn.correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724 !important;
+            font-weight: bold;
+        }
+
+        .option-btn.incorrect {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24 !important;
+        }
+
+        .progress {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* 解説エリアのスタイル */
+        .explanation-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #e9ecef;
+            line-height: 1.6;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .explanation-title.correct-text { color: var(--correct-color); }
+        .explanation-title.incorrect-text { color: var(--incorrect-color); }
+
+        /* 認定証のスタイル */
+        .certificate {
+            border: 10px double #d4af37;
+            padding: 30px;
+            background-color: #fffcf5;
+            text-align: center;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .certificate h2 {
+            color: #d4af37;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .cert-name-container {
+            margin: 20px 0 25px 0;
+        }
+
+        .cert-name {
+            font-size: 22px;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+            display: inline-block;
+            padding: 0 15px 5px;
+        }
+
+        .cert-honorific {
+            font-size: 20px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .cert-stamp {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #a00;
+        }
+
+        .hidden { display: none; }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- スタート画面 -->
+    <div id="start-screen">
+        <h1>AI基礎知識検定</h1>
+        <p>中小企業のデジタル・AI活用を推進するための基礎知識テストです。</p>
+        <p>全20問からランダムに10問が出題されます。<br><strong>8割（8問）以上の正解</strong>で「AI初級人材」として認定されます。</p>
+        <p style="font-size: 13px; color: #666; background: #f8f9fa; padding: 10px; border-radius: 6px;">※1問ごとに解説が表示されますので、解きながら学ぶことができます。</p>
+        <button class="btn" onclick="startQuiz()">検定を開始する</button>
+    </div>
+
+    <!-- クイズ画面 -->
+    <div id="quiz-screen" class="hidden">
+        <div class="progress" id="progress">第 1 / 10 問</div>
+        <div class="question-text" id="question-text">問題文がここに入ります</div>
+        <div id="options-container">
+            <!-- 選択肢ボタンが動的に挿入されます -->
+        </div>
+
+        <!-- 解答後の解説表示エリア -->
+        <div id="explanation-area" class="explanation-box hidden">
+            <div id="result-judge" class="explanation-title"></div>
+            <div id="explanation-text"></div>
+            <button class="btn" id="next-btn" style="margin-top:15px;" onclick="nextQuestion()">次の問題へ</button>
+        </div>
+    </div>
+
+    <!-- 結果画面 -->
+    <div id="result-screen" class="hidden">
+        <h2>検定結果</h2>
+        <p style="text-align: center; font-size: 20px;" id="score-text"></p>
+
+        <!-- 不合格時のメッセージ -->
+        <div id="failed-message" class="hidden">
+            <p>残念ながら不合格です。解説を振り返り、もう一度チャレンジしてAIの基礎知識を身につけましょう！</p>
+            <button class="btn" onclick="location.reload()">再挑戦する</button>
+        </div>
+
+        <!-- 合格時のフォームと認定証 -->
+        <div id="passed-section" class="hidden">
+            <div id="name-input-section">
+                <p>合格おめでとうございます！認定証に記載するお名前を入力してください。</p>
+                <input type="text" id="user-name-input" placeholder="氏名（例：山田 太郎）">
+                <button class="btn" onclick="generateCertificate()">認定証を発行する</button>
+            </div>
+
+            <div id="certificate" class="certificate hidden">
+                <h2>AI初級人材 認定証</h2>
+                <p>CERTIFICATE OF AI BEGINNER</p>
+                
+                <div class="cert-name-container">
+                    <span class="cert-name" id="cert-user-name"></span>
+                    <span class="cert-honorific">殿</span>
+                </div>
+
+                <p>あなたは「中小企業向けAI基礎知識検定」において、優秀な成績を収めAIの基礎知識を有することをここに認定します。</p>
+                <p id="cert-date" style="text-align: right; font-size: 12px; margin-top: 30px;"></p>
+                <div class="cert-stamp">中小企業AI活用推進委員会</div>
+                <button class="btn" style="margin-top:20px;" onclick="window.print()">この画面を印刷・保存する</button>
+                <button class="btn" style="background-color:#6c757d;" onclick="location.reload()">トップに戻る</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 解説付き問題バンク（全20問）
+const questionBank = [
+    {
+        q: "生成AI（ジェネレーティブAI）に関する説明として、最も適切なものはどれですか？",
+        options: ["過去のデータを学習し、テキストや画像などの新しいコンテンツを作成できるAI", "あらかじめ決められたプログラム通りにのみ動くロボットのこと", "インターネットの通信速度を自動的に高速化する技術"],
+        answer: 0,
+        explanation: "生成AIは過去のデータを学習し、新しい文章や画像・音楽などを自動生成する技術です。決められた動作しかできない従来のプログラムとは大きく異なります。"
+    },
+    {
+        q: "ChatGPTなどの大規模言語モデル（LLM）が得意とする作業はどれですか？",
+        options: ["将来の株価を100%正確に予測すること", "長文テキストの要約や文章の推敲", "自社の物理的な工場設備を自動で修理すること"],
+        answer: 1,
+        explanation: "LLMは大量の文章データを学習しているため、長文の要約、翻訳、メールや資料の下書き、文章の校正・推敲などのテキスト処理が極めて得意です。"
+    },
+    {
+        q: "AIが事実とは異なる嘘の情報を、あたかも正しいことのように出力する現象を何と呼びますか？",
+        options: ["ハルシネーション（幻覚）", "オーバーフィッティング（過学習）", "サイバーアタック"],
+        answer: 0,
+        explanation: "AIが本当らしく見えて実は間違っている情報を出力する現象を「ハルシネーション（幻覚）」と呼びます。AIの出力を鵜呑みにせず、人間がファクトチェックを行うことが重要です。"
+    },
+    {
+        q: "生成AIに適切な指示や質問を与えるための文言・命令文のことを何と呼びますか？",
+        options: ["プログラミング", "プロンプト", "アルゴリズム"],
+        answer: 1,
+        explanation: "AIへの指示文や質問のことを「プロンプト」と呼びます。具体的で分かりやすいプロンプトを作ることで、AIからより精度の高い回答を引き出せます。"
+    },
+    {
+        q: "業務で社外の無料生成AIツールを利用する際、最も注意すべきセキュリティ上のリスクはどれですか？",
+        options: ["パソコンの画面が急に暗くなること", "機密情報や個人情報を入力し、AIの学習データとして流出すること", "キーボードの入力ができなくなること"],
+        answer: 1,
+        explanation: "無料のAIツールでは、入力した文章がAIの再学習に利用される場合があります。社内の機密情報や顧客の個人情報をそのまま入力することは非常に危険です。"
+    },
+    {
+        q: "AIツールを自社に導入する際、最初にすべき適切なアプローチはどれですか？",
+        options: ["とりあえず一番高価なAIツールを購入する", "自社の解決したい課題（業務の無駄など）を明確にする", "全社員のパソコンを最新型買い替える"],
+        answer: 1,
+        explanation: "AIはあくまで課題解決の「手段」です。まず「どの業務の無駄を省きたいか」「どんな悩みを解決したいか」という自社の目的を明確にすることが成功の第一歩です。"
+    },
+    {
+        q: "生成AIを活用して作成した文章や画像を商用利用（ビジネス活用）する際、注意すべき権利はどれですか？",
+        options: ["著作権や商標権", "所有権", "労働権"],
+        answer: 0,
+        explanation: "生成された画像や文章が既存のキャラクターや他者のデザイン・文章に酷似している場合、意図せず「著作権」や「商標権」を侵害してしまうリスクがあります。"
+    },
+    {
+        q: "画像認識AIの活用例として、中小企業の現場で実際に効果を上げているものはどれですか？",
+        options: ["検品作業における製品の傷や不良品の自動検出", "電話応対の自動化", "売上伝票の自動発送"],
+        answer: 0,
+        explanation: "工場の検品作業や農産物の選別など、これまで人の目で行っていたチェック作業を「画像認識AI」で自動化する取り組みが多くの現場で成果を出しています。"
+    },
+    {
+        q: "「ディープラーニング（深層学習）」とは何ですか？",
+        options: ["人間が手動で全てのルールを教え込む学習方法", "人間の神経回路（ニューラルネットワーク）を模した、AIの学習手法の一つ", "インターネットから高速でファイルをダウンロードする技術"],
+        answer: 1,
+        explanation: "ディープラーニングは、人間の脳の神経回路を模した仕組みで、AI自身が大量のデータから特徴やルールを自動的に学習する高度な技術です。"
+    },
+    {
+        q: "AI導入によって期待できる、中小企業にとっての最大のメリットは何ですか？",
+        options: ["社員が全く働かなくてもよくなること", "定型業務の効率化による、人手不足の解消や付加価値業務への時間創出", "会社の税金が自動的に安くなること"],
+        answer: 1,
+        explanation: "資料作成やデータ入力などの定型業務をAIでスピードアップすることで、深刻な人手不足を補い、社員が接客や企画などの「付加価値の高い仕事」に集中できます。"
+    },
+    {
+        q: "社員が会社に無断で個人用のAIツールを業務に使用することを何と呼びますか？",
+        options: ["シャドーIT", "リモートワーク", "ソーシャルエンジニアリング"],
+        answer: 0,
+        explanation: "会社の許可や管理を受けずに、社員が個人所有のITツールやAIサービスを業務で使うことを「シャドーIT」と呼び、情報漏洩の大きなリスクとなります。"
+    },
+    {
+        q: "文字起こしAIを活用することで最も効率化できる業務はどれですか？",
+        options: ["会議や取材の「議事録作成」", "経費の「現金精算」", "商品の「梱包作業」"],
+        answer: 0,
+        explanation: "音声認識AIを使えば、会議の録音データから自動でテキストが生成されるため、これまで手作業で何時間もかかっていた「議事録作成」を大幅に短縮できます。"
+    },
+    {
+        q: "AIの回答の精度（クオリティ）を上げるための工夫として適切なものはどれですか？",
+        options: ["一言だけで大雑把に質問する", "前提条件、文脈、期待する形式（表形式など）を具体的に指定する", "専門用語を一切使わずに質問する"],
+        answer: 1,
+        explanation: "「誰に向けて」「何のために」「どんな形式（箇条書き、表など）で」出力してほしいのか、前提と背景を具体的に指示するほど、AIは正確で役に立つ回答を返します。"
+    },
+    {
+        q: "AIと人間が得意な役割の分担として、最も望ましい考え方はどれですか？",
+        options: ["全ての判断をAIに任せ、人間は何もチェックしない", "AIに下調べや下案作成を行わせ、人間が最終確認・判断をする", "AIは使わずに全て人間の手作業で行う"],
+        answer: 1,
+        explanation: "AIにゼロからアイデアや文章の下書き（たたき台）を作らせ、人間がファクトチェックと仕上げの判断を行う「人間とAIの協働」が最も安全で効果的です。"
+    },
+    {
+        q: "OCR（光学的文字認識）技術とAIを組み合わせた「AI-OCR」の主な用途はどれですか？",
+        options: ["手書きの注文書や伝票を読み取ってデータ化する", "動画を自動で編集する", "音声で家電を操作する"],
+        answer: 0,
+        explanation: "従来のOCRでは難しかった「癖のある手書き文字」や「歪んだレイアウト」の請求書・伝票でも、AI-OCRなら高い精度で読み取ってデータ入力業務を自動化できます。"
+    },
+    {
+        q: "生成AIが「文章」「画像」「音声」など複数の種類のデータを処理できる性質を何と呼びますか？",
+        options: ["マルチモーダル", "マルチタスク", "マルチアングル"],
+        answer: 0,
+        explanation: "テキスト（文章）だけでなく、画像・音声・動画など多様な形式のデータを同時に理解・処理できる機能を「マルチモーダル」と呼びます。"
+    },
+    {
+        q: "社内FAQ（よくある質問）への問い合わせ対応を自動化するために有効なAIツールはどれですか？",
+        options: ["AIチャットボット", "画像生成AI", "自動翻訳ソフト"],
+        answer: 0,
+        explanation: "社内規約やマニュアルの情報を学習させた「AIチャットボット」を設置することで、社員からの日常的な問い合わせに24時間自動で回答できるようになります。"
+    },
+    {
+        q: "AI活用における「ガイドライン」を社内で作成する主な目的は何ですか？",
+        options: ["AIの利用を全面的に禁止するため", "安全かつ効果的にAIを利用するためのルールや注意点を明確にするため", "AIの購入費用を隠すため"],
+        answer: 1,
+        explanation: "ガイドラインは社員を縛るためではなく、「どこまでが安全に使えて、何に注意すべきか」の境界線を明確にし、安心してAIを活用してもらうために設けます。"
+    },
+    {
+        q: "データ分析AIを導入する際に、事前に準備しておくべき最も重要なものはどれですか？",
+        options: ["整理された正確な業務データ（実績データなど）", "おしゃれなオフィス環境", "最新のプログラミング言語の教科書"],
+        answer: 0,
+        explanation: "AIの分析精度は入力するデータの質に左右されます（Garbage in, Garbage out）。まずは自社の売上や顧客データなどをきれいに整理しておくことが不可欠です。"
+    },
+    {
+        q: "これからのAI時代に、中小企業の社員に特に求められるスキルはどれですか？",
+        options: ["AIをプログラミングから自作するスキル", "AIを道具として使いこなし、自社の課題解決に活かす思考力", "AIの言う通りに疑わずに従う思考力"],
+        answer: 1,
+        explanation: "AIを自作するプログラマーになる必要はありません。「身近なAIツールを道具として使いこなし、自分の仕事をどう楽に・良くするか」という活用思考力が最も求められます。"
+    }
+];
+
+let selectedQuestions = [];
+let currentQuestionIndex = 0;
+let score = 0;
+
+// クイズの開始（20問から10問をランダム抽出）
+function startQuiz() {
+    const shuffled = [...questionBank].sort(() => 0.5 - Math.random());
+    selectedQuestions = shuffled.slice(0, 10);
+    
+    currentQuestionIndex = 0;
+    score = 0;
+
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("quiz-screen").classList.remove("hidden");
+
+    showQuestion();
+}
+
+// 質問の表示
+function showQuestion() {
+    // 解説エリアを非表示にリセット
+    document.getElementById("explanation-area").classList.add("hidden");
+
+    const qData = selectedQuestions[currentQuestionIndex];
+    document.getElementById("progress").innerText = `第 ${currentQuestionIndex + 1} / 10 問`;
+    document.getElementById("question-text").innerText = qData.q;
+
+    const optionsContainer = document.getElementById("options-container");
+    optionsContainer.innerHTML = "";
+
+    qData.options.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.className = "btn option-btn";
+        button.id = `option-${index}`;
+        button.innerText = `${index + 1}. ${option}`;
+        button.onclick = () => selectAnswer(index);
+        optionsContainer.appendChild(button);
+    });
+}
+
+// 回答の選択・採点と解説表示
+function selectAnswer(selectedIndex) {
+    const qData = selectedQuestions[currentQuestionIndex];
+    const isCorrect = (selectedIndex === qData.answer);
+
+    // 全ボタンの判定＆無効化
+    for (let i = 0; i < qData.options.length; i++) {
+        const btn = document.getElementById(`option-${i}`);
+        btn.disabled = true; // 連続クリック防止
+        
+        if (i === qData.answer) {
+            btn.classList.add("correct"); // 正解の選択肢（緑）
+        } else if (i === selectedIndex && !isCorrect) {
+            btn.classList.add("incorrect"); // 自分が選んで間違えた選択肢（赤）
+        }
+    }
+
+    // 得点加算
+    if (isCorrect) {
+        score++;
+    }
+
+    // 解説エリアの表示
+    const judgeEl = document.getElementById("result-judge");
+    if (isCorrect) {
+        judgeEl.innerText = "正解です！";
+        judgeEl.className = "explanation-title correct-text";
+    } else {
+        judgeEl.innerText = `不正解...（正解: ${qData.answer + 1}）`;
+        judgeEl.className = "explanation-title incorrect-text";
+    }
+
+    document.getElementById("explanation-text").innerText = qData.explanation;
+    document.getElementById("explanation-area").classList.remove("hidden");
+}
+
+// 「次の問題へ」ボタン処理
+function nextQuestion() {
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex < selectedQuestions.length) {
+        showQuestion();
+    } else {
+        showResult();
+    }
+}
+
+// 結果画面の表示
+function showResult() {
+    document.getElementById("quiz-screen").classList.add("hidden");
+    document.getElementById("result-screen").classList.remove("hidden");
+
+    document.getElementById("score-text").innerText = `10問中 ${score} 問 正解（正解率: ${score * 10}%）`;
+
+    if (score >= 8) {
+        document.getElementById("passed-section").classList.remove("hidden");
+    } else {
+        document.getElementById("failed-message").classList.remove("hidden");
+    }
+}
+
+// 認定証の生成
+function generateCertificate() {
+    const nameInput = document.getElementById("user-name-input").value;
+    if (!nameInput.trim()) {
+        alert("お名前を入力してください。");
+        return;
+    }
+
+    document.getElementById("cert-user-name").innerText = nameInput;
+    
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+    document.getElementById("cert-date").innerText = `発行日: ${dateStr}`;
+
+    document.getElementById("name-input-section").classList.add("hidden");
+    document.getElementById("certificate").classList.remove("hidden");
+}
+</script>
+
+</body>
+</html>
